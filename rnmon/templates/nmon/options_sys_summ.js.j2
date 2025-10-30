@@ -1,0 +1,61 @@
+
+let sys_summ_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_SYS_SUMM'));
+sys_summ_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: 30,
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+            name: 'usr%+sys%',
+            min: 0,
+            max: 100.1
+        },
+        { 
+            name: 'Disk xfers',
+        },
+    ],
+    series: [
+        { 
+            name: 'CPU%',
+            type: 'line',
+            data: [
+            {% for cpu in series_data_cpu -%}
+                [ '{{ cpu.x }}', {{ cpu.y }} ],
+            {% endfor -%}
+            ],
+        },
+        { 
+            name: 'IO/sec',
+            type: 'line',
+            yAxisIndex: 1,
+            data: [
+            {% for io in series_data_io -%}
+                [ '{{ io.x }}', {{ io.y }} ],
+            {% endfor -%}
+            ],
+        },
+
+    ],
+
+}
+);
+

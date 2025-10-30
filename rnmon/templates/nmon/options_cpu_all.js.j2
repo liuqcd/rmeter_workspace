@@ -1,0 +1,82 @@
+
+let cpu_all_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_CPU_ALL'));
+cpu_all_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+            name: 'Utilization (%)',
+            min: 0,
+            max: 100.1
+        },
+    ],
+    series: [
+        { 
+            name: 'User%',
+            type: 'line',
+            stack: '1',
+            areaStyle: {},
+            data: [
+                {% for user in series_data_user -%}
+                    [ '{{ user.x }}', {{ user.y }} ],
+                {% endfor -%}
+            ],
+        },
+        { 
+            name: 'Sys%',
+            type: 'line',
+            stack: '1',
+            areaStyle: {},
+            data: [
+                {% for sys in series_data_sys -%}
+                    [ '{{ sys.x }}', {{ sys.y }} ],
+                {% endfor -%}
+            ],
+        },
+        { 
+            name: 'Wait%',
+            type: 'line',
+            stack: '1',
+            areaStyle: {},
+            data: [
+                {% for wait in series_data_wait -%}
+                    [ '{{ wait.x }}', {{ wait.y }} ],
+                {% endfor -%}
+            ],
+        },
+        { 
+            name: 'Idle%',
+            type: 'line',
+            stack: '1',
+            areaStyle: {},
+            data: [
+                {% for idle in series_data_idle -%}
+                    [ '{{ idle.x }}', {{ idle.y }} ],
+                {% endfor -%}
+            ],
+        },
+
+    ],
+
+}
+);

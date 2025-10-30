@@ -1,0 +1,51 @@
+
+let jfs_file_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_JFSFILE'));
+jfs_file_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        type: 'scroll',
+        orient: 'vertical',
+        right: 'left',
+        align: 'right',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+            name: 'Utilization (%)',
+            min: 0,
+            max: 100.1
+        },
+    ],
+    series: [
+        {% for jfsfile in series_data -%}
+            { 
+                name: '{{ jfsfile.0 }}',
+                type: 'line',
+                data: [
+                    {% for data in jfsfile.1 -%}
+                        [ '{{ data.x }}', {{ data.y }} ],
+                    {% endfor -%}
+                ],
+            },
+        {% endfor -%}
+    ],
+
+}
+);

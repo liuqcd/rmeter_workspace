@@ -1,0 +1,72 @@
+
+let disk_summ_overtime_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_DISK_SUMM_Overtime'));
+disk_summ_overtime_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+            name: 'KB/sec',
+        },
+        { 
+            name: 'IO/sec',
+        },
+    ],
+    series: [
+        { 
+            name: 'Disk Read KB/s',
+            type: 'line',
+            // stack: '1',
+            areaStyle: {},
+            data: [
+                {% for read in series_data_read -%}
+                    [ '{{ read.x }}', {{ read.y }} ],
+                {% endfor -%}
+            ],
+        },
+        { 
+            name: 'Disk Write KB/s',
+            type: 'line',
+            // stack: '1',
+            areaStyle: {},
+            data: [
+                {% for write in series_data_write -%}
+                    [ '{{ write.x }}', {{ write.y }} ],
+                {% endfor -%}
+            ],
+        },
+        { 
+            name: 'IO/sec',
+            type: 'line',
+            yAxisIndex: 1,
+            data: [
+                {% for io in series_data_io -%}
+                    [ '{{ io.x }}', {{ io.y }} ],
+                {% endfor -%}
+            ],
+        },
+
+    ],
+
+}
+);
+

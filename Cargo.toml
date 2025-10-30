@@ -1,0 +1,17 @@
+[package]
+name = "rmeter_workspace"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = ["rscript", "rmeter", "rssh", "rnmon", "rtmp"]
+
+[workspace.dependencies]
+chrono = "^0.4"
+clap = {version = "^4.5", features = ["derive", "env"] }
+fern = "^0.7"
+log = "^0.4"
+anyhow = "^1.0"
+
+[dependencies]
+

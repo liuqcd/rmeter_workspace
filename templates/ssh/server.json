@@ -1,0 +1,19 @@
+{
+  "groups": [
+    {
+      "name": "tmp",
+      "members": [
+        { "hostname": "tmp", "ip": "172.29.149.82", "port": 22, "user": "liuq", "auth": { "Password": "yjxk" }, "valid": false },
+        { "hostname": "tmp", "ip": "172.29.149.82", "port": 22, "user": "liuq", "auth": "LocalSsh", "valid": false },
+        { "hostname": "tmp", "ip": "172.29.149.82", "port": 22, "user": "liuq", "auth": { "PrivateKeyFile": {} }, "valid": true }
+      ],
+      "valid": true
+    },
+    {
+      "name": "ibank",
+      "members": [
+        { "hostname": "app", "ip": "127.0.0.1", "port": 22, "user": "cx", "auth": { "PrivateKeyFile": {} }, "valid": true } ],
+      "valid": false
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+
+let diskbusy_overtime_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_DISKBUSY_Overtime'));
+diskbusy_overtime_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+        },
+    ],
+    series: [
+        {% for disk in series_data -%}
+            { 
+                name: '{{ disk.0 }}',
+                type: 'line',
+                data: [
+                    {% for data in disk.1  -%}
+                        [ '{{ data.x }}', {{ data.y }} ],
+                    {% endfor -%}
+                ],
+            },
+        {% endfor -%}
+    ],
+}
+);

@@ -1,0 +1,63 @@
+
+let mem_active_chart_{{ nmon_id }} = echarts.init(document.getElementById('{{ nmon_id }}_MEM_ACTIVE'));
+mem_active_chart_{{ nmon_id }}.setOption(
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+        {# type: 'scroll', #}
+        {# orient: 'vertical', #}
+        {# right: 'left', #}
+        {# align: 'right', #}
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: { 
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        { 
+            name: 'MB',
+            {# min: 0, #}
+            {# max: 100.1 #}
+        },
+    ],
+    series: [
+        { 
+            name: 'memtotal',
+            type: 'line',
+            data: [
+                {% for data in series_data_memtotal -%}
+                    [ '{{ data.x }}', {{ data.y }} ],
+                {% endfor -%}
+            ],
+        },
+        {% for other in series_data_other -%}
+            { 
+                name: '{{ other.0 }}',
+                type: 'line',
+                stack: '1',
+                areaStyle: {},
+                data: [
+                    {% for data in other.1 -%}
+                        [ '{{ data.x }}', {{ data.y }} ],
+                    {% endfor -%}
+                ],
+            },
+        {% endfor -%}
+    ],
+
+}
+);
