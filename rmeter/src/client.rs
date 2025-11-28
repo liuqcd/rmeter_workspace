@@ -40,13 +40,13 @@ pub struct Args {
 #[command(next_help_heading = "Ssh")]
 /// 子程序调用rssh程序
 pub struct SshArgs {
-    /// 设置nmon监控
+    /// 设置nmon监控，要求工作目录存在server.json文件
     #[arg(long, action = ArgAction::SetTrue)]
     pub nmon: bool,
-    /// nmon监控时，设置是否立即执行JMeter
+    /// 发起nmon监控时，设置是否立即执行JMeter，还是等发起nmon监控(data mode)的命令执行完（注意一般而言发起nmon监控的命令会马上返回，但偶尔因nmon版本太老，在rssh命令调用时无法马上返回）
     #[arg(long, action = ArgAction::SetTrue)]
     pub nowait: bool,
-    /// 服务器上nmon结果存放的目录，也是识别nmon进程的标识，尽量唯一，只有当-nmon 生效的时候才需要
+    /// 服务器上nmon结果存放的目录，也是识别nmon进程的标识，尽量唯一，只有当--nmon 生效的时候才需要
     #[arg(long = "nmondir", value_name = "DIR", default_value = "perf")]
     pub ssh_dir: Option<String>,
 }
