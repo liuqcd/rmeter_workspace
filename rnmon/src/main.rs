@@ -28,10 +28,9 @@ use ndarray_stats::QuantileExt;
 use ndarray_stats::SummaryStatisticsExt;
 
 use crate::askama::Point;
-use crate::askama::html::Charts;
-
-
-
+use crate::askama::html::ChartsName;
+use crate::askama::js::JsCache;
+use crate::askama::js::EchartsOption;
 
 fn main() -> Result<()>{
 
@@ -246,103 +245,109 @@ pub fn nmon(
     path: PathBuf,
     nmonargs: &NmonArgs,
 ) -> Result<()> {
+
+    // 打印CPU_ALL到控制台
     let mut res_nmon_txt = String::new();
-    let mut js = String::new();
-    let mut html_template_data = Vec::new();
-    let mut charts = Vec::new();
-
-    // 生成HTML图表
-    if nmonargs.run_nmon_args.html {
-        if nmonargs.run_nmon_args.cpu || nmonargs.run_nmon_args.html {
-            charts.push(Charts::new("SYS_SUMM".to_string(), "selected".to_string()));
-            charts.push(Charts::new("CPU_SUMM".to_string(), "".to_string()));
-            charts.push(Charts::new("CPU_ALL".to_string(), "".to_string()));
-        }
-        if nmonargs.run_nmon_args.jfsfile {
-            charts.push(Charts::new("JFSFILE".to_string(), "".to_string()));
-        }
-        if nmonargs.run_nmon_args.mem_free {
-            charts.push(Charts::new("MEM_FREE".to_string(), "".to_string()));
-        }
-        if nmonargs.run_nmon_args.mem_active {
-            charts.push(Charts::new("MEM_ACTIVE".to_string(), "".to_string()));
-        }
-        if nmonargs.run_nmon_args.mem_swap {
-            charts.push(Charts::new("MEM_SWAP".to_string(), "".to_string()));
-        }
-        if nmonargs.run_nmon_args.disk_busy {
-            charts.push(Charts::new("DISKBUSY_AWMN".to_string(), "".to_string()));
-        }
-    }
-
-    for (i, ndata) in nmon_datas.iter().enumerate() {
+    for ndata in nmon_datas.iter() {
         // 使用表格形式，打印CPU_ALL到屏蔽，包括： mean, stv
         let res = output::console_print_cpuall(ndata);
         res_nmon_txt.push_str(res.as_str());
         res_nmon_txt.push_str("\n");
-
-        // 生成js
-        if nmonargs.run_nmon_args.html {
-            let id = format!("{:03}", i);
-            html_template_data.push((id.clone(), ndata.filename().to_string()));
-
-            if nmonargs.run_nmon_args.cpu || nmonargs.run_nmon_args.html {
-                let cpu_all = askama::js_cpu_all(&id, ndata);
-                js.push_str(&cpu_all);
-                js.push('\n');
-
-                let system_summary = askama::js_system_summary(&id, ndata);
-                js.push_str(&system_summary);
-                js.push('\n');
-
-                let cpu_summ = askama::js_cpu_summ(&id, ndata);
-                js.push_str(&cpu_summ);
-                js.push('\n');
-            }
-
-            if nmonargs.run_nmon_args.jfsfile {
-                let jfs_file = askama::js_jfs_file(&id, ndata);
-                js.push_str(&jfs_file);
-                js.push('\n');
-            }
-
-            if nmonargs.run_nmon_args.mem_free {
-                let mem_free = askama::js_mem_free(&id, ndata);
-                js.push_str(&mem_free);
-                js.push('\n');
-            }
-            if nmonargs.run_nmon_args.mem_active {
-                let mem_active = askama::js_mem_active(&id, ndata);
-                js.push_str(&mem_active);
-                js.push('\n');
-            }
-            if nmonargs.run_nmon_args.mem_swap {
-                let mem_swap = askama::js_mem_swap(&id, ndata);
-                js.push_str(&mem_swap);
-                js.push('\n');
-            }
-
-            if nmonargs.run_nmon_args.disk_busy {
-                let disk_busy = askama::js_disk_busy_awmn(&id, ndata);
-                // println!("1111111111111: {}", disk_busy);
-                js.push_str(&disk_busy);
-                js.push('\n');
-            }
-        }
     }
     // 保存console输出到文件
     output::save(path.join("res.nmon.txt"), res_nmon_txt);
 
+    // 生成有哪些可选择的nmon监控指标
+    let mut charts = Vec::new();
     if nmonargs.run_nmon_args.html {
+        if nmonargs.run_nmon_args.cpu || nmonargs.run_nmon_args.html {
+            charts.push((ChartsName::SYS_SUMM, true));
+            charts.push((ChartsName::CPU_SUMM, false));
+            charts.push((ChartsName::CPU_ALL, false));
+        }
+        if nmonargs.run_nmon_args.jfsfile {
+            charts.push((ChartsName::JFSFILE, false));
+        }
+        if nmonargs.run_nmon_args.mem_free {
+            charts.push((ChartsName::MEM_FREE, false));
+        }
+        if nmonargs.run_nmon_args.mem_active {
+            charts.push((ChartsName::MEM_ACTIVE, false));
+        }
+        if nmonargs.run_nmon_args.mem_swap {
+            charts.push((ChartsName::MEM_SWAP, false));
+        }
+        if nmonargs.run_nmon_args.disk_busy {
+            charts.push((ChartsName::DISKBUSY_AWMN, false));
+        }
+    }
+
+
+    let mut html_template_data = Vec::new();
+    let mut options = Vec::new();
+    // 生成HTML模板数据
+    if nmonargs.run_nmon_args.html {
+        for (i, ndata) in nmon_datas.iter().enumerate() {
+            // 图表的元素<div>的id由3位数据的nmon数据文件id+图表名称组成,比如: 001_SYS_SUMM
+            let nmon_id = format!("{:03}", i);
+            html_template_data.push((nmon_id.clone(), ndata.filename().to_string()));
+
+            for (name, _) in charts.iter() {
+                let chart_id = format!("{}_{}", nmon_id, name.to_string());
+                match name {
+                    ChartsName::SYS_SUMM => {
+                        let system_summary = askama::js_system_summary(ndata);
+                        options.push(EchartsOption::new(chart_id, system_summary));
+                    },
+                    ChartsName::CPU_SUMM => {
+                        let cpu_summary = askama::js_cpu_summ(ndata);
+                        options.push(EchartsOption::new(chart_id, cpu_summary));
+                    },
+                    ChartsName::CPU_ALL => {
+                        let cpu_all = askama::js_cpu_all(ndata);
+                        options.push(EchartsOption::new(chart_id, cpu_all));
+                    },
+                    ChartsName::JFSFILE => {
+                        let jfsfile = askama::js_jfsfile(ndata);
+                        options.push(EchartsOption::new(chart_id, jfsfile));
+                    },
+                    ChartsName::MEM_FREE => {
+                        let mem_free = askama::js_mem_free(ndata);
+                        options.push(EchartsOption::new(chart_id, mem_free));
+                    },
+                    ChartsName::MEM_ACTIVE => {
+                        let mem_active = askama::js_mem_active(ndata);
+                        options.push(EchartsOption::new(chart_id, mem_active));
+                    },
+                    ChartsName::MEM_SWAP => {
+                        let mem_swap = askama::js_mem_swap(ndata);
+                        options.push(EchartsOption::new(chart_id, mem_swap));
+                    },
+                    ChartsName::DISKBUSY_AWMN => {
+                        let diskbusy_awmn = askama::js_diskbusy_awmn(ndata);
+                        options.push(EchartsOption::new(chart_id, diskbusy_awmn));
+                    },
+                }
+            }
+        }
+    }
+
+    if nmonargs.run_nmon_args.html {
+        // 保存html文件
+        let html = askama::html(html_template_data,
+            charts.iter().map(|name: &(ChartsName, bool)|name.into()).collect()
+        );
+        output::save(path.join("index_nmons.html"), html);
+    }
+
+
+    if nmonargs.run_nmon_args.html {
+        let js_cache = JsCache::new(options);
         // 保存图表数据到js文件
-        output::save(path.join("index_nmons_data.js"), js);
+        output::save(path.join("index_nmons_data.js"), js_cache.to_string());
         // 生成echarts.min.js
         let echarts = askama::js_echarts();
         output::save(path.join("echarts.min.js"), echarts);
-
-        // 保存html文件
-        let html = askama::html(html_template_data, charts);
-        output::save(path.join("index_nmons.html"), html);
     }
 
     Ok(())

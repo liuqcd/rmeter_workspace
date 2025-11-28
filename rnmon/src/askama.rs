@@ -1,6 +1,6 @@
 
 pub mod html;
-mod js;
+pub mod js;
 
 use ndarray::Array1;
 
@@ -11,7 +11,7 @@ use askama::Template;
 use std::collections::BTreeMap;
 pub use html::NmonHtmlTemplate;
 pub use html::NmonFile;
-pub use html::Charts;
+pub use html::Chart;
 
 use super::Measurement;
 
@@ -29,7 +29,7 @@ pub fn js_echarts() -> String {
 pub struct Point {
     x: String,
     y: f32,
-} 
+}
 
 // impl TimeSeriesData {
 impl Point {
@@ -48,7 +48,7 @@ trait ToJStr: Template {
 }
 
 // pub fn html(template_data: Vec<(String, String)>) -> String {
-pub fn html(template_data: Vec<(String, String)>, charts: Vec<Charts>) -> String {
+pub fn html(template_data: Vec<(String, String)>, charts: Vec<Chart>) -> String {
 
     let mut nmonfiles = Vec::new();
     for (id, name) in template_data.into_iter() {
@@ -68,7 +68,7 @@ pub fn html(template_data: Vec<(String, String)>, charts: Vec<Charts>) -> String
 
 
 
-pub fn js_system_summary(id: &str, data: &NmonData) -> String {
+pub fn js_system_summary(data: &NmonData) -> String {
 
     let cpu_all = data.measurement("CPU_ALL").unwrap();
     let cpu_idle = cpu_all.column("Idle%").unwrap();
@@ -76,7 +76,7 @@ pub fn js_system_summary(id: &str, data: &NmonData) -> String {
     // let zzzz = data.xalis_datetime_to_own();
     let zzzz = cpu_all.zzzz();
     let series_data_cpu: Vec<Point> = zzzz.iter().zip(cpu_used.iter())
-        .map(|(x, y)| 
+        .map(|(x, y)|
             Point::new(
                 format!("{}", x.format("%Y-%m-%d %H:%M:%S")),
                 *y
@@ -87,20 +87,12 @@ pub fn js_system_summary(id: &str, data: &NmonData) -> String {
     let series_data_io = disk_xfer.column_sum_echartjs_overtime();
 
     let b = js::SystemSum::new(
-        id.to_string(),
         data.filename().to_string(),
         series_data_cpu,
         series_data_io
     );
     b.to_js_str()
 }
-   
-   
-   
-   
-   
-   
-   
 
 
 
@@ -108,7 +100,14 @@ pub fn js_system_summary(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_cpu_summ(id: &str, data: &NmonData) -> String {
+
+
+
+
+
+
+
+pub fn js_cpu_summ(data: &NmonData) -> String {
     let measurements = data.measurements();
     let cpuxx: BTreeMap<&String, &Measurement> = measurements.iter().filter(|(k,_v)| k.starts_with("CPU") && !k.starts_with("CPU_ALL")).collect();
 
@@ -120,17 +119,16 @@ pub fn js_cpu_summ(id: &str, data: &NmonData) -> String {
     for (name, measurement) in cpuxx.iter() {
         axis_label.push(name.to_string());
         let user = measurement.column_mean("User%").unwrap();
-        let sys = measurement.column_mean("Sys%").unwrap(); 
+        let sys = measurement.column_mean("Sys%").unwrap();
         let wait = measurement.column_mean("Wait%").unwrap();
         data_user.push(user);
         data_sys.push(sys);
         data_wait.push(wait);
     }
-    
+
     let b = js::CpuSumm::new(
-        id.to_string(),
         data.filename().to_string(),
-        axis_label, 
+        axis_label,
         data_user,
         data_sys,
         data_wait,
@@ -147,7 +145,7 @@ pub fn js_cpu_summ(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_cpu_all(id: &str, data: &NmonData) -> String {
+pub fn js_cpu_all(data: &NmonData) -> String {
     let cpu_all = data.measurement("CPU_ALL").unwrap();
     let series_data_user = cpu_all.column_echartjs_overtime("User%").unwrap();
     let series_data_sys = cpu_all.column_echartjs_overtime("Sys%").unwrap();
@@ -155,9 +153,8 @@ pub fn js_cpu_all(id: &str, data: &NmonData) -> String {
     let series_data_idle = cpu_all.column_echartjs_overtime("Idle%").unwrap();
 
     let b = js::CpuAll::new(
-        id.to_string(),
         data.filename().to_string(),
-        series_data_user, 
+        series_data_user,
         series_data_sys,
         series_data_wait,
         series_data_idle,
@@ -167,12 +164,11 @@ pub fn js_cpu_all(id: &str, data: &NmonData) -> String {
 }
 
 
-pub fn js_jfs_file(id: &str, data: &NmonData) -> String {
+pub fn js_jfsfile(data: &NmonData) -> String {
     let measurement = data.measurement("JFSFILE").unwrap();
     let series_data = measurement.columns_echartjs_overtime();
 
     let b = js::JfsFile::new(
-        id.to_string(),
         data.filename().to_string(),
         series_data,
     );
@@ -183,14 +179,13 @@ pub fn js_jfs_file(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_mem_free(id: &str, data: &NmonData) -> String {
+pub fn js_mem_free(data: &NmonData) -> String {
     let measurement = data.measurement("MEM").unwrap();
-    
+
     let series_data_total = measurement.column_echartjs_overtime("memtotal").unwrap();
     let series_data_other = measurement.column_echartjs_vec(&["memfree", "cached", "buffers"]);
 
     let b = js::MemFree::new(
-        id.to_string(),
         data.filename().to_string(),
         series_data_total,
         series_data_other,
@@ -204,14 +199,13 @@ pub fn js_mem_free(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_mem_swap(id: &str, data: &NmonData) -> String {
+pub fn js_mem_swap(data: &NmonData) -> String {
     let measurement = data.measurement("MEM").unwrap();
-    
+
     let series_data_total = measurement.column_echartjs_overtime("swaptotal").unwrap();
     let series_data_other = measurement.column_echartjs_vec(&["swapfree", "swapcached",]);
 
     let b = js::MemSwap::new(
-        id.to_string(),
         data.filename().to_string(),
         series_data_total,
         series_data_other,
@@ -230,14 +224,13 @@ pub fn js_mem_swap(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_mem_active(id: &str, data: &NmonData) -> String {
+pub fn js_mem_active(data: &NmonData) -> String {
     let measurement = data.measurement("MEM").unwrap();
-    
+
     let series_data_total = measurement.column_echartjs_overtime("memtotal").unwrap();
     let series_data_other = measurement.column_echartjs_vec(&["active", "inactive",]);
 
     let b = js::MemActive::new(
-        id.to_string(),
         data.filename().to_string(),
         series_data_total,
         series_data_other,
@@ -256,7 +249,7 @@ pub fn js_mem_active(id: &str, data: &NmonData) -> String {
 
 
 
-pub fn js_disk_busy_awmn(id: &str, data: &NmonData) -> String {
+pub fn js_diskbusy_awmn(data: &NmonData) -> String {
     let measurement = data.measurement("DISKBUSY").unwrap();
 
     let axis_label = measurement.header().clone();
@@ -267,11 +260,10 @@ pub fn js_disk_busy_awmn(id: &str, data: &NmonData) -> String {
 
     let data_max = measurement.rows_max();
     let data_min = measurement.rows_min();
-    
+
     let b = js::DiskBusyAwmn::new(
-        id.to_string(),
         data.filename().to_string(),
-        axis_label, 
+        axis_label,
         data_avg,
         data_wavg,
         data_max,

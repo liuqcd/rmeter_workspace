@@ -3,12 +3,12 @@
     {
       "name": "模板", "members": [
         { "hostname": "tmp", "ip": "127.0.0.1", "port": 22, "user": "username", "auth": { "Password": "password" }, "valid": true },
-        { "hostname": "tmp", "ip": "127.0.0.1", "port": 22, "user": "username", "auth": "LocalSsh", "valid": true },
-        { "hostname": "tmp", "ip": "127.0.0.1", "port": 22, "user": "username", "auth": { "PrivateKeyFile": {} }, "valid": true }
+        { "hostname": "tmp", "ip": "127.0.0.1", "port": 22, "user": "username", "auth": "LocalSsh", "valid": true }
       ], "valid": false },
     { "name": "test",
       "members": [
-        { "hostname": "app", "ip": "127.0.0.1", "port": 22, "user": "cx", "auth": { "PrivateKeyFile": {} }, "valid": true } ],
-      "valid": true }
+        { "hostname": "app", "ip": "127.0.0.1", "port": 22, "user": "username", "auth": { "Password": "password" }, "valid": true },
+        { "hostname": "db", "ip": "127.0.0.2", "port": 22, "user": "username", "auth": { "Password": "password" }, "valid": true }
+      ], "valid": true }
   ]
 }

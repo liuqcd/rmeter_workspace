@@ -24,8 +24,6 @@ pub fn save(path: PathBuf , data: String ) {
 
 
 pub fn console_print_cpuall(nmon: &NmonData) -> String {
-    // let print = HashSet::from(["CPU_ALL"]) ;
-    // console_print_filter(nmon, &print)
     let cpu_all = nmon.measurement("CPU_ALL").unwrap();
     let filename = cpu_all.filename();
     let mean = cpu_all.rows_mean();
@@ -42,11 +40,10 @@ pub fn console_print_cpuall(nmon: &NmonData) -> String {
     builder.push_record(pheader);
     builder.push_record(pavg);
     builder.push_record(pstdev);
-    // builder.push_record(None::<String>);
     let table = builder.build().with(Style::rounded()).to_string();
     println!("{}", table);
     res_nmon_text.push_str(table.as_str());
-    
+
     res_nmon_text
 }
 
@@ -86,11 +83,7 @@ where
     type IntoIter = std::vec::IntoIter<Self::Item>;
     fn into_iter(self) -> Self::IntoIter {
         let mut vec = Vec::new();
-        // vec.push(self.filename.clone());
-        // vec.push(self.tag1.clone());
-        // vec.push(self.tag2.clone());
         vec.push(self.filename);
-        // vec.push(self.key);
         vec.push(self.note);
         vec.push(self.tag);
         self.values
@@ -99,4 +92,3 @@ where
         vec.into_iter()
     }
 }
-
