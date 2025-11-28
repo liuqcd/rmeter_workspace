@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [workspace]
-members = ["rscript", "rmeter", "rssh", "rnmon", "rtmp"]
+members = ["rscript", "rmeter", "rssh", "rnmon"]
 
 [workspace.dependencies]
 chrono = "^0.4"
@@ -14,4 +14,3 @@ log = "^0.4"
 anyhow = "^1.0"
 
 [dependencies]
-
