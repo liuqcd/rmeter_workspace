@@ -1,0 +1,66 @@
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: {
+        axisLabel: {
+            rotate: '90',
+        },
+        data: [
+            {% for lable in axis_label -%}
+                '{{ lable }}',
+            {% endfor -%}
+        ],
+    },
+    yAxis: [
+        {
+            min: 0,
+            max: 100.1,
+        },
+    ],
+    series: [
+        {
+            name: 'User%',
+            type: 'bar',
+            stack: '1',
+            data: [
+                {% for user in data_user -%}
+                    {{ user }},
+                {% endfor -%}
+            ],
+        },
+        {
+            name: 'Sys%',
+            type: 'bar',
+            stack: '1',
+            data: [
+                {% for sys in data_sys -%}
+                    {{ sys }},
+                {% endfor -%}
+            ],
+        },
+        {
+            name: 'Wait%',
+            type: 'bar',
+            stack: '1',
+            data: [
+                {% for wait in data_wait -%}
+                    {{ wait }},
+                {% endfor -%}
+            ],
+        },
+
+    ],
+
+}

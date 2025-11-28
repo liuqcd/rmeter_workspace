@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <script src="./echarts.min.js"></script>
+        <script src="./index_nmons_data.js"></script>
+
+        <style type="text/css">
+            .chart {
+                width: 800px;
+                height: 450px;
+            }
+            .nmon {
+                float: left;
+            }
+            .select {
+                position: fixed;
+                top: 1px;
+                right: 1px;
+            }
+
+        </style>
+
+        <script>
+            function renderChart(id) {
+                // 如果已经缓存过，直接复用
+                let chart = document.getElementById(id);
+                let echarts_init_id = chart.dataset.chartid
+                // 首次渲染
+                if(!echarts_init_id) {
+                    console.log("init chart", id);
+                    echarts_init_id = echarts.init(chart);
+                    let option = options_cache.get(id);
+                    echarts_init_id.setOption(option);
+                    chart.dataset.chartid = echarts_init_id;
+                }else {
+                    console.log("reuse chart", id);
+                }
+            }
+            function showCharts() {
+                let nmonfiles = document.getElementById("nmonfiles").options;
+                for(nf of nmonfiles) {
+                    let nmonfile_id = nf.value;
+                    if(nf.selected) {
+                        document.getElementById(nmonfile_id).style.display="";
+                        let charts = document.getElementById("charts").options;
+                        for(ct of charts) {
+                            let chart_name = ct.value;
+                            let chart_id = nmonfile_id + "_" + chart_name;
+                            if(ct.selected) {
+                                renderChart(chart_id);
+                                document.getElementById(chart_id).style.display="";
+                            }else {
+                                console.log("hide chart", chart_id);
+                                document.getElementById(chart_id).style.display="none";
+                            }
+                        }
+                    }else {
+                        console.log("hide nmonfile", nmonfile_id);
+                        document.getElementById(nmonfile_id).style.display="none";
+                    }
+              }
+            }
+
+        </script>
+
+    </head>
+    <body>
+        <div class="select">
+            <div>
+                <label>
+                    nmonfiles:
+                    <select name="nmonfiles" id="nmonfiles" multiple size="20" onchange="showCharts()">
+                    {% for nmon in nmonfiles -%}
+                        <option value="{{ nmon.id }}" {{ nmon.selected }}>{{ nmon.name }}</option>
+                    {% endfor -%}
+                    </select>
+                </label>
+            </div>
+            <div>
+                <label>
+                    charts:
+                    <select name="charts" id="charts" multiple size="15" onchange="showCharts()">
+                    {% for chart in charts -%}
+                        <option value="{{ chart.name }}" {{ chart.selected }}>{{ chart.name }}</option>
+                    {% endfor -%}
+                    </select>
+                </label>
+            </div>
+        </div>
+
+        <div id="nmoncharts">
+        {% for nmon in nmonfiles -%}
+            <div id="{{ nmon.id }}" class="nmon">
+            {% for chart in charts -%}
+                <div id="{{ nmon.id }}_{{ chart.name }}" class="chart"></div>
+            {% endfor -%}
+            </div>
+        {% endfor -%}
+        </div>
+
+        <script>showCharts()</script>
+    </body>
+</html>

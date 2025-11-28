@@ -1,0 +1,42 @@
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: {
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        {
+        },
+    ],
+    series: [
+        {% for net in series_data -%}
+            {
+                name: '{{ net.0 }}',
+                type: 'line',
+                areaStyle: {},
+                stack: '1',
+                data: [
+                    {% for data in net.1 -%}
+                        [ '{{ data.x }}', {{ data.y }} ],
+                    {% endfor -%}
+                ],
+            },
+        {% endfor -%}
+    ],
+}

@@ -1,0 +1,50 @@
+{
+    title: {
+        text: '{{ nmon_name }}',
+        left: 'center',
+        top: 'top',
+    },
+    legend: {
+        top: '30',
+    },
+    tooltip: {
+        trigger: 'axis',
+        axisPointer: {
+            type: 'cross',
+        },
+    },
+    xAxis: {
+        type: 'time',
+        axisLabel: {
+            rotate: '90',
+            formatter: '{hh}:{mm}',
+        },
+    },
+    yAxis: [
+        {
+        },
+    ],
+    series: [
+        {
+            name: 'Total-Read',
+            type: 'line',
+            areaStyle: {},
+            data: [
+                {% for read in series_data_read -%}
+                    [ '{{ read.x }}', {{ read.y }} ],
+                {% endfor -%}
+            ],
+        },
+        {
+            name: 'Total-Write (-ve)',
+            type: 'line',
+            areaStyle: {},
+            data: [
+                {% for write in series_data_write_ve -%}
+                    [ '{{ write.x }}', {{ write.y }} ],
+                {% endfor -%}
+            ],
+        },
+    ],
+
+}

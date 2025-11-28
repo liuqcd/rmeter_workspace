@@ -1,0 +1,4 @@
+const options_cache = new Map();
+{% for data in datas -%}
+options_cache.set("{{ data.id }}", {{ data.option }});
+{% endfor -%}
